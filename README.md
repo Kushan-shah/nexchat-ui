@@ -1,6 +1,16 @@
 # ⚡ NexChat UI — Real-Time Chat Frontend
 
-> The client interface for [NexChat](https://github.com/Kushan-shah/nexchat-realtime-messaging) — a production-grade real-time messaging system.
+> The client interface for [NexChat Backend](https://github.com/Kushan-shah/nexchat-realtime-messaging) — a production-grade real-time messaging system.
+
+### 🌍 Live Application URLs
+* **Frontend UI**: [chat.kushan.codes](https://chat.kushan.codes) (Vercel)
+* **Backend API (Primary)**: [api.chat.kushan.codes](https://api.chat.kushan.codes) (AWS EC2)
+* **Backend API (Secondary)**: [nexchat-api.onrender.com](https://nexchat-api.onrender.com) (Render Web Service)
+* **API Documentation**: [api.chat.kushan.codes/swagger](https://api.chat.kushan.codes/swagger)
+
+### 📦 Source Code
+* **Frontend Repository**: [Kushan-shah/nexchat-ui](https://github.com/Kushan-shah/nexchat-ui)
+* **Backend Repository**: [Kushan-shah/nexchat-realtime-messaging](https://github.com/Kushan-shah/nexchat-realtime-messaging)
 
 ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite)
