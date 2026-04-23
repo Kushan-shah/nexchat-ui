@@ -209,6 +209,11 @@ body { background: var(--bg-gradient); color: var(--text-main); }
   padding: 12px;
 }
 
+/* Navigation cards — hidden on desktop, shown on mobile */
+.sidebar-nav-cards {
+  display: none;
+}
+
 .sidebar-bottom {
   padding: 10px 12px;
   border-top: 1px solid var(--glass-border);
@@ -392,16 +397,36 @@ body { background: var(--bg-gradient); color: var(--text-main); }
     visibility: hidden;
   }
 
+  /* Premium mobile header with accent underline */
   .sidebar-header {
-    padding: 16px 16px 12px;
+    padding: 20px 20px 16px;
+    background: linear-gradient(180deg, rgba(107, 76, 255, 0.06) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(107, 76, 255, 0.15);
   }
 
   .sidebar-section {
-    padding: 10px 14px;
+    padding: 12px 18px;
   }
 
   .sidebar-bottom {
-    padding: 10px 14px;
+    padding: 12px 18px;
+  }
+
+  /* Nav cards — premium glassmorphic style */
+  .sidebar-nav-cards {
+    display: block;
+    padding: 14px 18px 6px !important;
+  }
+  .sidebar-nav-cards .user-card {
+    background: rgba(107, 76, 255, 0.08) !important;
+    border: 1px solid rgba(107, 76, 255, 0.2) !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
+    transition: all 0.2s ease;
+  }
+  .sidebar-nav-cards .user-card:active {
+    transform: scale(0.97);
+    background: rgba(107, 76, 255, 0.15) !important;
   }
 
   .main-chat-container {
@@ -413,68 +438,100 @@ body { background: var(--bg-gradient); color: var(--text-main); }
     display: flex;
   }
 
-  /* Larger touch targets */
+  /* Touch-friendly user cards with active feedback */
   .user-card {
-    padding: 12px 14px;
-    gap: 12px;
-    min-height: 52px;
+    padding: 14px 18px;
+    gap: 14px;
+    min-height: 56px;
+    border-radius: 14px;
+    transition: all 0.15s ease;
+  }
+  .user-card:active {
+    transform: scale(0.98);
+    background: rgba(107, 76, 255, 0.1);
   }
   .user-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 0.88rem;
+    width: 44px;
+    height: 44px;
+    font-size: 0.92rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
+
+  /* Tab bar */
   .tab-btn {
-    padding: 14px 8px;
-    font-size: 0.78rem;
+    padding: 14px 10px;
+    font-size: 0.8rem;
   }
   .primary-btn {
-    min-height: 44px;
+    min-height: 46px;
+    border-radius: 14px;
   }
   .input-field {
-    font-size: 16px; /* Prevents iOS auto-zoom on focus */
+    font-size: 16px;
+    border-radius: 14px;
+    padding: 14px 16px;
   }
 
-  /* Messages */
+  /* User ID box */
+  .user-id-box {
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+
+  /* Message bubbles */
   .msg-bubble {
-    max-width: 85% !important;
+    max-width: 82% !important;
   }
   .chat-messages-area {
-    padding: 12px 14px !important;
+    padding: 14px 16px !important;
+    gap: 6px !important;
   }
 
-  /* Input bar safe area */
+  /* Frosted glass input bar */
   .chat-input-bar {
-    padding: 10px 12px !important;
-    padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    padding: 12px 14px !important;
+    padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    background: rgba(15, 18, 25, 0.85) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(107, 76, 255, 0.1) !important;
   }
 
-  /* Toast full width */
+  /* Toast — full-width banner */
   .dm-toast {
-    left: 12px !important;
-    right: 12px !important;
+    left: 14px !important;
+    right: 14px !important;
     max-width: none !important;
-    top: 12px !important;
-    border-radius: 12px !important;
+    top: 14px !important;
+    border-radius: 16px !important;
+    padding: 14px 20px !important;
+    backdrop-filter: blur(12px);
   }
 
-  /* AI chips scroll horizontally */
+  /* AI suggestion chips — horizontal scroll */
   .ai-suggestions-row {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap !important;
-    padding: 8px 14px !important;
-    gap: 6px !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
   }
   .ai-suggestions-row::-webkit-scrollbar { display: none; }
 
   /* DM header */
   .dm-header {
-    padding: 10px 14px;
+    padding: 12px 16px;
+    background: rgba(15, 18, 25, 0.85) !important;
+    backdrop-filter: blur(20px);
   }
 
   .empty-state {
-    padding: 30px 20px;
+    padding: 40px 24px;
+  }
+
+  /* Section headers */
+  .sidebar-section .truncate {
+    font-size: 0.88rem;
   }
 }
 

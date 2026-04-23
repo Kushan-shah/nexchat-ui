@@ -303,6 +303,20 @@ export default function Dashboard() {
 
         {/* Scrollable Container for Lists */}
         <div className="sidebar-scroll">
+          {/* Global Room entry — visible on mobile as navigation */}
+          <div className="sidebar-section sidebar-nav-cards">
+            <div className="user-card" onClick={() => { setTab('global'); setShowSidebarOnMobile(false); }}
+              style={{ background: tab === 'global' ? 'var(--accent-glow)' : 'transparent', border: '1px solid var(--glass-border)', borderRadius: '12px', marginBottom: '6px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Globe size={18} color="white" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="truncate" style={{ fontWeight: 600, fontSize: '0.88rem' }}>Global Room</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Chat with everyone</div>
+              </div>
+            </div>
+          </div>
+
           {/* Online Users */}
           <div className="sidebar-section">
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', padding: '0 4px' }}>
