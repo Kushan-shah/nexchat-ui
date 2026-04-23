@@ -270,7 +270,7 @@ export default function Dashboard() {
       {/* ===== SIDEBAR ===== */}
       <div className={`sidebar-container ${!showSidebarOnMobile ? 'sidebar-hidden' : ''}`}>
         {/* Header */}
-        <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid var(--glass-border)' }}>
+        <div className="sidebar-header">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Zap size={20} color="var(--accent)" />
@@ -290,21 +290,21 @@ export default function Dashboard() {
           </p>
 
           {/* Your ID */}
-          <div onClick={copyId} style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 10px', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}>
+          <div onClick={copyId} className="user-id-box">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-dim)', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
                 {copied ? '✓ Copied!' : 'Your ID'}
               </span>
               <Copy size={10} color="var(--text-dim)" />
             </div>
-            <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)', fontSize: '0.65rem' }}>{user.id}</span>
+            <span className="user-id-text">{user.id}</span>
           </div>
         </div>
 
         {/* Scrollable Container for Lists */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div className="sidebar-scroll">
           {/* Online Users */}
-          <div style={{ padding: '12px' }}>
+          <div className="sidebar-section">
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', padding: '0 4px' }}>
               <Users size={13} color="var(--text-dim)" />
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -340,7 +340,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Chats (Offline included) */}
-          <div style={{ padding: '12px', borderTop: '1px solid var(--glass-border)' }}>
+          <div className="sidebar-section" style={{ borderTop: '1px solid var(--glass-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', padding: '0 4px' }}>
               <Clock size={13} color="var(--text-dim)" />
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -375,7 +375,7 @@ export default function Dashboard() {
         </div>
 
         {/* Paste ID */}
-        <div style={{ padding: '10px 12px', borderTop: '1px solid var(--glass-border)' }}>
+        <div className="sidebar-bottom">
           <form onSubmit={connectById} style={{ display: 'flex', gap: '6px' }}>
             <input type="text" className="input-field" placeholder="Paste ID to DM..." value={dmTargetId} onChange={e => setDmTargetId(e.target.value)} style={{ flex: 1, fontSize: '0.78rem', padding: '9px 11px' }} />
             <button type="submit" className="primary-btn" style={{ padding: '9px 12px', borderRadius: '10px' }}><Send size={14} /></button>
@@ -383,7 +383,7 @@ export default function Dashboard() {
         </div>
 
         {/* Logout */}
-        <div style={{ padding: '10px 12px', borderTop: '1px solid var(--glass-border)' }}>
+        <div className="sidebar-bottom">
           <button onClick={logout} style={{ width: '100%', background: 'transparent', color: 'var(--text-dim)', border: '1px solid var(--glass-border)', padding: '9px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.8rem', transition: 'all 0.2s' }}>
             <LogOut size={14} /> Logout
           </button>
@@ -398,13 +398,13 @@ export default function Dashboard() {
             const found = onlineUsers.find(u => u.id === dmNotification.userId);
             if (found) startDM(found);
             setDmNotification(null);
-          }} style={{ position: 'absolute', top: '60px', right: '16px', zIndex: 100, background: 'linear-gradient(135deg, var(--accent), #a855f7)', padding: '12px 20px', borderRadius: '14px', boxShadow: '0 8px 24px rgba(107,76,255,0.35)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, maxWidth: '300px' }}>
+          }}>
             💬 <strong>{dmNotification.from}</strong> sent you a message
           </div>
         )}
 
         {/* Tab Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', background: 'var(--surface)' }}>
+        <div className="chat-tab-bar">
           <button className="mobile-back-btn" onClick={() => setShowSidebarOnMobile(true)} title="Back to menu">
             <ArrowLeft size={20} />
           </button>
@@ -432,7 +432,7 @@ export default function Dashboard() {
 
         {/* DM header */}
         {tab === 'dm' && activeDM && (
-          <div style={{ padding: '10px 20px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--surface)' }}>
+          <div className="dm-header">
             <div className="user-avatar" style={{ background: getAvatarColor(activeDM.username), width: 32, height: 32, fontSize: '0.75rem' }}>{activeDM.username[0].toUpperCase()}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{activeDM.username}</div>
@@ -451,7 +451,7 @@ export default function Dashboard() {
 
         {/* Empty DM */}
         {tab === 'dm' && !activeDM && (
-          <div className="flex-center" style={{ flex: 1, color: 'var(--text-dim)', textAlign: 'center', padding: '40px' }}>
+          <div className="empty-state">
             <div className="animate-enter">
               <MessageSquare size={48} style={{ marginBottom: '16px', opacity: 0.2 }} />
               <p style={{ fontSize: '0.95rem', marginBottom: '6px' }}>Select a user from the sidebar</p>
@@ -463,7 +463,7 @@ export default function Dashboard() {
         {/* Messages */}
         {(tab === 'global' || (tab === 'dm' && activeDM)) && (
           <>
-            <div className="chat-messages-area" style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div className="chat-messages-area">
               {/* Welcome */}
               {tab === 'global' && filteredMessages.length === 0 && !searchQuery && (
                 <div className="animate-enter" style={{ textAlign: 'center', padding: '30px 20px', color: 'var(--text-dim)' }}>
@@ -486,7 +486,7 @@ export default function Dashboard() {
                 const isMe = msg.senderId === user.id;
                 const msgReactions = reactions[msg.id] || {};
                 return (
-                  <div key={msg.id} className={`msg-bubble ${isMe ? 'animate-left' : 'animate-right'}`} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '70%', marginBottom: '2px' }}>
+                  <div key={msg.id} className={`msg-bubble ${isMe ? 'animate-left' : 'animate-right'}`} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start' }}>
                     {!isMe && <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '2px', marginLeft: '12px', fontWeight: 500 }}>{msg.senderName || 'User'}</div>}
                     <div style={{ position: 'relative' }} onDoubleClick={() => addReaction(msg.id, '❤️')}>
                       <div style={{ background: isMe ? 'var(--accent)' : 'rgba(255,255,255,0.05)', padding: '9px 13px', borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px', fontSize: '0.88rem', lineHeight: '1.4', wordBreak: 'break-word' }}>
@@ -515,7 +515,7 @@ export default function Dashboard() {
 
             {/* AI Suggestions */}
             {aiEnabledLocal && aiSuggestions.length > 0 && (
-              <div className="animate-enter ai-suggestions-row" style={{ padding: '6px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="animate-enter ai-suggestions-row">
                 <Bot size={15} color="var(--accent)" />
                 {aiSuggestions.map((sug, i) => (
                   <button key={i} onClick={() => sendMessage(null, sug)} style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)', color: 'var(--accent-hover)', padding: '5px 12px', borderRadius: '16px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{sug}</button>
@@ -536,7 +536,7 @@ export default function Dashboard() {
             )}
 
             {/* Input */}
-            <form onSubmit={e => sendMessage(e)} className="chat-input-bar" style={{ padding: '12px 16px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--surface)' }}>
+            <form onSubmit={e => sendMessage(e)} className="chat-input-bar">
               <button type="button" onClick={() => setShowEmoji(!showEmoji)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: showEmoji ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.2s', padding: '4px' }} title="Toggle Emojis">
                 <Smile size={20} />
               </button>
