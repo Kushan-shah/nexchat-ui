@@ -173,7 +173,16 @@ body { background: var(--bg-gradient); color: var(--text-main); }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Mobile Responsiveness */
+/* ========================================
+   LAYOUT CONTAINERS
+   ======================================== */
+.app-shell {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  display: flex;
+  overflow: hidden;
+}
+
 .sidebar-container {
   width: 300px;
   min-width: 280px;
@@ -182,7 +191,6 @@ body { background: var(--bg-gradient); color: var(--text-main); }
   flex-direction: column;
   background: var(--surface);
   flex-shrink: 0;
-  transition: all 0.3s ease;
 }
 
 .main-chat-container {
@@ -191,35 +199,197 @@ body { background: var(--bg-gradient); color: var(--text-main); }
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
 }
 
-.mobile-only-btn {
+/* Back button — hidden on desktop */
+.mobile-back-btn {
   display: none;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
-  color: var(--text-dim);
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
-  margin-right: 12px;
-  transition: color 0.2s;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.mobile-back-btn:active {
+  background: var(--glass-hover);
+  color: var(--accent);
 }
 
+/* ========================================
+   LOGIN PAGE — RESPONSIVE
+   ======================================== */
+.login-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-brand-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-form-panel {
+  width: 440px;
+  min-width: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  border-left: 1px solid var(--glass-border);
+  background: var(--surface);
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   MOBILE RESPONSIVE — DASHBOARD
+   ======================================== */
 @media (max-width: 768px) {
-  .mobile-hide {
-    display: none !important;
+  .app-shell {
+    position: relative;
   }
+
   .sidebar-container {
+    position: absolute;
+    top: 0; left: 0;
     width: 100% !important;
     min-width: 100% !important;
-    border-right: none !important;
+    height: 100%;
+    border-right: none;
+    z-index: 20;
+    transform: translateX(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease;
   }
+
+  .sidebar-container.sidebar-hidden {
+    transform: translateX(-100%);
+    pointer-events: none;
+    opacity: 0;
+  }
+
   .main-chat-container {
-    width: 100% !important;
+    width: 100%;
+    min-width: 100%;
   }
-  .mobile-only-btn {
+
+  .mobile-back-btn {
     display: flex;
-    align-items: center;
-    justify-content: center;
+  }
+
+  /* Touch-friendly tap targets */
+  .user-card {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+  .tab-btn {
+    padding: 12px 8px;
+    font-size: 0.78rem;
+  }
+  .primary-btn {
+    padding: 12px 18px;
+    min-height: 44px;
+  }
+  .input-field {
+    padding: 12px 14px;
+    font-size: 1rem; /* Prevents iOS zoom on focus */
+  }
+
+  /* Message bubbles wider on mobile */
+  .msg-bubble {
+    max-width: 85% !important;
+  }
+
+  /* Chat area padding */
+  .chat-messages-area {
+    padding: 12px !important;
+  }
+
+  /* Input bar safe area for phones with notches */
+  .chat-input-bar {
+    padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  }
+
+  /* DM notification toast */
+  .dm-toast {
+    left: 16px !important;
+    right: 16px !important;
+    max-width: none !important;
+  }
+
+  /* AI suggestion chips: scroll horizontally */
+  .ai-suggestions-row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    padding-bottom: 4px;
+  }
+  .ai-suggestions-row::-webkit-scrollbar { display: none; }
+}
+
+/* ========================================
+   MOBILE RESPONSIVE — LOGIN PAGE
+   ======================================== */
+@media (max-width: 768px) {
+  .login-shell {
+    flex-direction: column;
+  }
+
+  .login-brand-panel {
+    flex: none;
+    padding: 32px 24px 20px;
+  }
+  .login-brand-panel h1 {
+    font-size: 2rem !important;
+  }
+  .login-brand-panel p {
+    font-size: 0.95rem !important;
+    margin-bottom: 24px !important;
+  }
+
+  .login-form-panel {
+    width: 100%;
+    min-width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--glass-border);
+    padding: 24px 20px;
+    flex: 1;
+  }
+
+  /* Smaller orbs on mobile */
+  .orb-1 { width: 200px !important; height: 200px !important; }
+  .orb-2 { width: 150px !important; height: 150px !important; }
+  .orb-3 { width: 120px !important; height: 120px !important; }
+}
+
+/* Extra small screens (SE, small Androids) */
+@media (max-width: 380px) {
+  .sidebar-container .sidebar-header {
+    padding: 14px 14px 10px !important;
+  }
+  .tab-btn {
+    font-size: 0.72rem;
+    padding: 10px 4px;
   }
 }
+

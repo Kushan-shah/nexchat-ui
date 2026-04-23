@@ -266,9 +266,9 @@ export default function Dashboard() {
   const filteredMessages = searchQuery ? activeMessages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : activeMessages;
 
   return (
-    <div style={{ height: '100vh', display: 'flex', overflow: 'hidden' }}>
+    <div className="app-shell">
       {/* ===== SIDEBAR ===== */}
-      <div className={`sidebar-container ${!showSidebarOnMobile ? 'mobile-hide' : ''}`}>
+      <div className={`sidebar-container ${!showSidebarOnMobile ? 'sidebar-hidden' : ''}`}>
         {/* Header */}
         <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid var(--glass-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -391,10 +391,10 @@ export default function Dashboard() {
       </div>
 
       {/* ===== MAIN ===== */}
-      <div className={`main-chat-container ${showSidebarOnMobile ? 'mobile-hide' : ''}`}>
+      <div className="main-chat-container">
         {/* DM Notification Toast */}
         {dmNotification && (
-          <div className="animate-enter" onClick={() => {
+          <div className="animate-enter dm-toast" onClick={() => {
             const found = onlineUsers.find(u => u.id === dmNotification.userId);
             if (found) startDM(found);
             setDmNotification(null);
@@ -405,8 +405,8 @@ export default function Dashboard() {
 
         {/* Tab Bar */}
         <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', background: 'var(--surface)' }}>
-          <button className="mobile-only-btn" onClick={() => setShowSidebarOnMobile(true)} title="Back to menu">
-            <ArrowLeft size={18} />
+          <button className="mobile-back-btn" onClick={() => setShowSidebarOnMobile(true)} title="Back to menu">
+            <ArrowLeft size={20} />
           </button>
           <button className={`tab-btn ${tab === 'global' ? 'active' : ''}`} onClick={() => { setTab('global'); setShowSidebarOnMobile(false); }}>
             <Globe size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
@@ -463,7 +463,7 @@ export default function Dashboard() {
         {/* Messages */}
         {(tab === 'global' || (tab === 'dm' && activeDM)) && (
           <>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div className="chat-messages-area" style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {/* Welcome */}
               {tab === 'global' && filteredMessages.length === 0 && !searchQuery && (
                 <div className="animate-enter" style={{ textAlign: 'center', padding: '30px 20px', color: 'var(--text-dim)' }}>
@@ -486,7 +486,7 @@ export default function Dashboard() {
                 const isMe = msg.senderId === user.id;
                 const msgReactions = reactions[msg.id] || {};
                 return (
-                  <div key={msg.id} className={isMe ? 'animate-left' : 'animate-right'} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '70%', marginBottom: '2px' }}>
+                  <div key={msg.id} className={`msg-bubble ${isMe ? 'animate-left' : 'animate-right'}`} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '70%', marginBottom: '2px' }}>
                     {!isMe && <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '2px', marginLeft: '12px', fontWeight: 500 }}>{msg.senderName || 'User'}</div>}
                     <div style={{ position: 'relative' }} onDoubleClick={() => addReaction(msg.id, '❤️')}>
                       <div style={{ background: isMe ? 'var(--accent)' : 'rgba(255,255,255,0.05)', padding: '9px 13px', borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px', fontSize: '0.88rem', lineHeight: '1.4', wordBreak: 'break-word' }}>
@@ -515,7 +515,7 @@ export default function Dashboard() {
 
             {/* AI Suggestions */}
             {aiEnabledLocal && aiSuggestions.length > 0 && (
-              <div className="animate-enter" style={{ padding: '6px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="animate-enter ai-suggestions-row" style={{ padding: '6px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <Bot size={15} color="var(--accent)" />
                 {aiSuggestions.map((sug, i) => (
                   <button key={i} onClick={() => sendMessage(null, sug)} style={{ background: 'var(--accent-glow)', border: '1px solid var(--accent)', color: 'var(--accent-hover)', padding: '5px 12px', borderRadius: '16px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{sug}</button>
@@ -536,7 +536,7 @@ export default function Dashboard() {
             )}
 
             {/* Input */}
-            <form onSubmit={e => sendMessage(e)} style={{ padding: '12px 16px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--surface)' }}>
+            <form onSubmit={e => sendMessage(e)} className="chat-input-bar" style={{ padding: '12px 16px', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--surface)' }}>
               <button type="button" onClick={() => setShowEmoji(!showEmoji)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: showEmoji ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.2s', padding: '4px' }} title="Toggle Emojis">
                 <Smile size={20} />
               </button>

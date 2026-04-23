@@ -34,17 +34,14 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', display: 'flex', overflow: 'hidden', position: 'relative' }}>
+    <div className="login-shell">
       {/* Animated gradient orbs */}
       <div className="orb orb-1" />
       <div className="orb orb-2" />
       <div className="orb orb-3" />
 
       {/* Left Panel — Branding */}
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-        padding: '60px 40px', position: 'relative', zIndex: 1
-      }}>
+      <div className="login-brand-panel">
         <div className="animate-enter" style={{ maxWidth: '400px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <Zap size={36} color="var(--accent)" />
@@ -86,11 +83,7 @@ export default function Login() {
       </div>
 
       {/* Right Panel — Auth Form */}
-      <div style={{
-        width: '440px', minWidth: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '40px', borderLeft: '1px solid var(--glass-border)', background: 'var(--surface)',
-        position: 'relative', zIndex: 1
-      }}>
+      <div className="login-form-panel">
         <div className="animate-enter" style={{ width: '100%', maxWidth: '340px' }}>
           <div style={{ marginBottom: '28px', textAlign: 'center' }}>
             <MessageSquare size={40} color="var(--accent)" style={{ marginBottom: '12px' }} />
