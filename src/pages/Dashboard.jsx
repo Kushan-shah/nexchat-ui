@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { SocketContext } from '../context/SocketContext';
-import { LogOut, Send, Check, CheckCheck, Bot, Globe, MessageSquare, Users, Copy, Zap, Wifi, WifiOff, Clock, Search, Smile } from 'lucide-react';
+import { LogOut, Send, Check, CheckCheck, Bot, Globe, MessageSquare, Users, Copy, Zap, Wifi, WifiOff, Clock, Search, Smile, ArrowLeft } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -65,6 +65,7 @@ export default function Dashboard() {
   const [unreadDM, setUnreadDM] = useState(0);
   const [recentChats, setRecentChats] = useState([]);
   const [aiEnabledLocal, setAiEnabledLocal] = useState(true);
+  const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
 
   const chatEndRef = useRef(null);
   const typingTimerRef = useRef(null);
@@ -102,6 +103,7 @@ export default function Dashboard() {
     setTab('dm');
     setAiSuggestions([]);
     setUnreadDM(0);
+    setShowSidebarOnMobile(false);
     socket.emit('join_dm', { targetUserId: targetUser.id });
 
     // Mark messages as read and visually clear the badge
@@ -266,7 +268,7 @@ export default function Dashboard() {
   return (
     <div style={{ height: '100vh', display: 'flex', overflow: 'hidden' }}>
       {/* ===== SIDEBAR ===== */}
-      <div style={{ width: '300px', minWidth: '280px', borderRight: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', background: 'var(--surface)', flexShrink: 0 }}>
+      <div className={`sidebar-container ${!showSidebarOnMobile ? 'mobile-hide' : ''}`}>
         {/* Header */}
         <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid var(--glass-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -389,7 +391,7 @@ export default function Dashboard() {
       </div>
 
       {/* ===== MAIN ===== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+      <div className={`main-chat-container ${showSidebarOnMobile ? 'mobile-hide' : ''}`}>
         {/* DM Notification Toast */}
         {dmNotification && (
           <div className="animate-enter" onClick={() => {
@@ -403,11 +405,14 @@ export default function Dashboard() {
 
         {/* Tab Bar */}
         <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', background: 'var(--surface)' }}>
-          <button className={`tab-btn ${tab === 'global' ? 'active' : ''}`} onClick={() => setTab('global')}>
+          <button className="mobile-only-btn" onClick={() => setShowSidebarOnMobile(true)} title="Back to menu">
+            <ArrowLeft size={18} />
+          </button>
+          <button className={`tab-btn ${tab === 'global' ? 'active' : ''}`} onClick={() => { setTab('global'); setShowSidebarOnMobile(false); }}>
             <Globe size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
             Global Room
           </button>
-          <button className={`tab-btn ${tab === 'dm' ? 'active' : ''}`} onClick={() => { setTab('dm'); setUnreadDM(0); }} style={{ position: 'relative' }}>
+          <button className={`tab-btn ${tab === 'dm' ? 'active' : ''}`} onClick={() => { setTab('dm'); setUnreadDM(0); setShowSidebarOnMobile(false); }} style={{ position: 'relative' }}>
             <MessageSquare size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
             Direct Message
             {unreadDM > 0 && <span style={{ position: 'absolute', top: '6px', right: '20px', width: '18px', height: '18px', background: 'var(--danger)', borderRadius: '50%', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{unreadDM}</span>}

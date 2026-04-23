@@ -172,3 +172,54 @@ body { background: var(--bg-gradient); color: var(--text-main); }
 /* Utilities */
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Mobile Responsiveness */
+.sidebar-container {
+  width: 300px;
+  min-width: 280px;
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.main-chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-only-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  margin-right: 12px;
+  transition: color 0.2s;
+}
+
+@media (max-width: 768px) {
+  .mobile-hide {
+    display: none !important;
+  }
+  .sidebar-container {
+    width: 100% !important;
+    min-width: 100% !important;
+    border-right: none !important;
+  }
+  .main-chat-container {
+    width: 100% !important;
+  }
+  .mobile-only-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
