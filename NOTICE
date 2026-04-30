@@ -1,0 +1,11 @@
+NexChat UI — Real-Time Chat Frontend
+Copyright 2026 Kushan Shah
+
+This product includes software developed by Kushan Shah
+(https://github.com/Kushan-shah).
+
+Third-party dependencies used under their respective licenses:
+  - React (MIT) — https://react.dev
+  - Vite (MIT) — https://vitejs.dev
+  - Socket.IO Client (MIT) — https://socket.io
+  - Lucide React (ISC) — https://lucide.dev
