@@ -138,9 +138,3 @@ npm run dev
 | Repository | Description |
 |---|---|
 | [nexchat-realtime-messaging](https://github.com/Kushan-shah/nexchat-realtime-messaging) | Node.js backend — Socket.IO, Redis, PostgreSQL, K6 tested |
-
----
-
-## 📄 License
-
-MIT
