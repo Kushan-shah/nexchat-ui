@@ -596,3 +596,177 @@ body { background: var(--bg-gradient); color: var(--text-main); }
     padding: 20px 16px 30px !important;
   }
 }
+
+/* ========================================
+   MARKDOWN & RAG STYLES
+   ======================================== */
+.markdown-body { font-size: 0.88rem; line-height: 1.5; }
+.markdown-body p { margin-bottom: 8px; }
+.markdown-body p:last-child { margin-bottom: 0; }
+.markdown-body strong { font-weight: 700; }
+.markdown-body ul, .markdown-body ol { margin-left: 18px; margin-bottom: 8px; }
+.markdown-body li { margin-bottom: 3px; }
+
+/* ===== RAG Answer Card ===== */
+.rag-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(107, 76, 255, 0.08) 0%, rgba(168, 85, 247, 0.05) 100%);
+  border: 1px solid rgba(107, 76, 255, 0.25);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 8px 0;
+  box-shadow: 0 4px 24px rgba(107, 76, 255, 0.12);
+}
+
+.rag-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(107, 76, 255, 0.1);
+  border-bottom: 1px solid rgba(107, 76, 255, 0.15);
+}
+
+.rag-card-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #a855f7);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(107, 76, 255, 0.4);
+}
+
+.rag-card-answer {
+  padding: 16px 18px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+.rag-card-answer p { margin-bottom: 10px; }
+.rag-card-answer p:last-child { margin-bottom: 0; }
+.rag-card-answer strong { color: var(--accent-hover); font-weight: 700; }
+.rag-card-answer ul, .rag-card-answer ol { margin-left: 20px; margin-bottom: 10px; }
+.rag-card-answer li { margin-bottom: 5px; }
+.rag-card-answer blockquote {
+  margin: 10px 0;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+.rag-card-answer code {
+  background: rgba(0,0,0,0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--accent-hover);
+}
+
+/* Citations section */
+.rag-card-citations {
+  border-top: 1px solid rgba(107, 76, 255, 0.12);
+  padding: 8px 16px 12px;
+}
+
+.rag-citations-toggle {
+  background: transparent;
+  border: 1px solid rgba(107, 76, 255, 0.3);
+  color: var(--accent-hover);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.rag-citations-toggle:hover {
+  background: var(--accent-glow);
+}
+
+.rag-citations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rag-citation-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rag-citation-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(107, 76, 255, 0.15);
+  border: 1px solid rgba(107, 76, 255, 0.3);
+  color: var(--accent-hover);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.rag-citation-page {
+  background: var(--accent);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  margin-left: 2px;
+}
+
+.rag-citation-snippet {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 6px 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  border-left: 2px solid rgba(107, 76, 255, 0.3);
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* RAG loading indicator */
+.rag-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(107, 76, 255, 0.06);
+  border: 1px solid rgba(107, 76, 255, 0.15);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--accent-hover);
+  margin: 8px 0;
+}
+.rag-loading-dots {
+  display: flex;
+  gap: 4px;
+}
+.rag-loading-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dotBounce 1.4s infinite ease-in-out both;
+}
+.rag-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.rag-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.rag-loading-dots span:nth-child(3) { animation-delay: 0s; }
+

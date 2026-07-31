@@ -1,9 +1,56 @@
 import React, { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { SocketContext } from '../context/SocketContext';
-import { LogOut, Send, Check, CheckCheck, Bot, Globe, MessageSquare, Users, Copy, Zap, Wifi, WifiOff, Clock, Search, Smile, ArrowLeft } from 'lucide-react';
+import { LogOut, Send, Check, CheckCheck, Bot, Globe, MessageSquare, Users, Copy, Zap, Wifi, WifiOff, Clock, Search, Smile, ArrowLeft, Paperclip, FileText, BookOpen, Database, Trash2, X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
+
+// Premium RAG Answer Card — renders Gemini answer + citation pills
+function RagCard({ answer, citations, query, onClose }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="rag-card animate-enter">
+      <div className="rag-card-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="rag-card-icon"><Bot size={16} /></div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--accent-hover)' }}>NexBot · RAG Engine</div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', marginTop: '1px' }}>Query: {query}</div>
+          </div>
+        </div>
+        <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: '4px', borderRadius: '6px', lineHeight: 1 }}>✕</button>
+      </div>
+      <div className="rag-card-answer">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{answer}</ReactMarkdown>
+      </div>
+      {citations.length > 0 && (
+        <div className="rag-card-citations">
+          <button className="rag-citations-toggle" onClick={() => setExpanded(!expanded)}>
+            <FileText size={12} />
+            {citations.length} source{citations.length > 1 ? 's' : ''} cited
+            <span style={{ marginLeft: '4px' }}>{expanded ? '▲' : '▼'}</span>
+          </button>
+          {expanded && (
+            <div className="rag-citations-list">
+              {citations.map((c, i) => (
+                <div key={i} className="rag-citation-item">
+                  <div className="rag-citation-pill">
+                    <BookOpen size={10} />
+                    <span>{c.source}</span>
+                    <span className="rag-citation-page">p.{c.page_num}</span>
+                  </div>
+                  <div className="rag-citation-snippet">&ldquo;{c.snippet}&rdquo;</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const AVATAR_COLORS = [
   'linear-gradient(135deg, #6b4cff, #a855f7)',
@@ -66,9 +113,81 @@ export default function Dashboard() {
   const [recentChats, setRecentChats] = useState([]);
   const [aiEnabledLocal, setAiEnabledLocal] = useState(true);
   const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [ragCards, setRagCards] = useState([]);
+  const [ragLoading, setRagLoading] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [showDocsModal, setShowDocsModal] = useState(false);
 
   const chatEndRef = useRef(null);
   const typingTimerRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Only PDF files are supported for the Knowledge Base.');
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('document', file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/rag/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSystemMessages(prev => [...prev.slice(-20), { id: Date.now(), text: `📄 Attached to Knowledge Base: ${file.name}`, time: new Date().toISOString() }]);
+        fetchDocuments(); // Refresh the list
+      } else {
+        alert(data.message || 'Failed to upload document');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Upload error. Is the Python RAG Microservice running?');
+    } finally {
+      setIsUploading(false);
+      e.target.value = null; // reset input
+    }
+  };
+
+  const fetchDocuments = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/rag/documents`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status === 'success') setDocuments(data.documents);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (token) fetchDocuments();
+  }, [token, fetchDocuments]);
+
+  const deleteDocument = async (filename) => {
+    try {
+      const res = await fetch(`${API_URL}/api/rag/documents/${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setDocuments(prev => prev.filter(d => d.filename !== filename));
+        setSystemMessages(prev => [...prev.slice(-20), { id: Date.now(), text: `🗑️ Removed from Knowledge Base: ${filename}`, time: new Date().toISOString() }]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -242,10 +361,59 @@ export default function Dashboard() {
     }
   };
 
-  const sendMessage = (e, aiText = null) => {
+  const sendMessage = async (e, aiText = null) => {
     if (e) e.preventDefault();
     const txt = aiText || inputMsg;
     if (!txt.trim() || !socket) return;
+
+    // --- RAG AI Interception ---
+    if (txt.trim().toLowerCase().startsWith('@doc')) {
+      const query = txt.trim().substring(4).trim();
+      const messageId = crypto.randomUUID();
+      const isGlobal = tab === 'global';
+      
+      // Show user's query
+      const optimisticMsg = { id: messageId, content: txt.trim(), senderId: user.id, senderName: user.username, createdAt: new Date().toISOString(), status: 'DELIVERED' };
+      if (isGlobal) setGlobalMessages(prev => [...prev, optimisticMsg]);
+      else if (activeDM) setDmMessages(prev => [...prev, { ...optimisticMsg, receiverId: activeDM.id }]);
+      
+      setInputMsg('');
+      
+      // Fake typing indicator for AI
+      setSystemMessages(prev => [...prev.slice(-20), { id: Date.now(), text: `🤖 AI is searching documents...`, time: new Date().toISOString() }]);
+
+      setRagLoading(true);
+      try {
+        const res = await fetch(`${API_URL}/api/rag/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ query }),
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          // Push a structured RAG card instead of a messy chat bubble
+          const newCard = {
+            id: crypto.randomUUID(),
+            query,
+            answer: data.data.llm_prompt,
+            citations: data.data.citations,
+            createdAt: new Date().toISOString(),
+          };
+          setRagCards(prev => [...prev, newCard]);
+        } else {
+          alert(data.message || 'RAG query failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to connect to RAG engine. Is it running on port 8001?');
+      } finally {
+        setRagLoading(false);
+      }
+      return;
+    }
+    // ---------------------------
+
     const messageId = crypto.randomUUID();
     const isGlobal = tab === 'global';
     const payload = { messageId, content: txt.trim(), isGlobal, ...((!isGlobal && activeDM) && { receiverId: activeDM.id }) };
@@ -315,6 +483,18 @@ export default function Dashboard() {
                 <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Chat with everyone</div>
               </div>
             </div>
+            
+            <div className="user-card" onClick={() => setShowDocsModal(true)}
+              style={{ background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: '12px', marginBottom: '6px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Database size={18} color="white" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="truncate" style={{ fontWeight: 600, fontSize: '0.88rem' }}>Knowledge Base</div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Manage uploaded PDFs</div>
+              </div>
+            </div>
+
           </div>
 
           {/* Online Users */}
@@ -503,7 +683,7 @@ export default function Dashboard() {
                   <div key={msg.id} className={`msg-bubble ${isMe ? 'animate-left' : 'animate-right'}`} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start' }}>
                     {!isMe && <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '2px', marginLeft: '12px', fontWeight: 500 }}>{msg.senderName || 'User'}</div>}
                     <div style={{ position: 'relative' }} onDoubleClick={() => addReaction(msg.id, '❤️')}>
-                      <div style={{ background: isMe ? 'var(--accent)' : 'rgba(255,255,255,0.05)', padding: '9px 13px', borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px', fontSize: '0.88rem', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                      <div style={{ background: isMe ? 'var(--accent)' : 'rgba(255,255,255,0.05)', padding: '9px 13px', borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px', fontSize: '0.88rem', lineHeight: '1.45', wordBreak: 'break-word' }}>
                         {msg.content}
                       </div>
                       {/* Reactions */}
@@ -524,6 +704,26 @@ export default function Dashboard() {
                   </div>
                 );
               })}
+
+              {/* RAG Cards — premium structured AI answers */}
+              {ragCards.map(card => (
+                <RagCard
+                  key={card.id}
+                  query={card.query}
+                  answer={card.answer}
+                  citations={card.citations}
+                  onClose={() => setRagCards(prev => prev.filter(c => c.id !== card.id))}
+                />
+              ))}
+              {/* RAG Loading Indicator */}
+              {ragLoading && (
+                <div className="rag-loading animate-enter">
+                  <div className="rag-loading-dots">
+                    <span/><span/><span/>
+                  </div>
+                  <span>Searching knowledge base…</span>
+                </div>
+              )}
               <div ref={chatEndRef} />
             </div>
 
@@ -551,16 +751,64 @@ export default function Dashboard() {
 
             {/* Input */}
             <form onSubmit={e => sendMessage(e)} className="chat-input-bar">
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="application/pdf" onChange={handleFileUpload} />
+              <button type="button" onClick={() => fileInputRef.current.click()} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: isUploading ? 'var(--success)' : 'var(--text-dim)', transition: 'color 0.2s', padding: '4px' }} title="Upload PDF to Knowledge Base">
+                <Paperclip size={20} />
+              </button>
               <button type="button" onClick={() => setShowEmoji(!showEmoji)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: showEmoji ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.2s', padding: '4px' }} title="Toggle Emojis">
                 <Smile size={20} />
               </button>
               <button type="button" onClick={() => { setAiEnabledLocal(!aiEnabledLocal); setAiSuggestions([]); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: aiEnabledLocal ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.2s', padding: '4px' }} title="Toggle AI Smart Replies">
                 <Bot size={20} />
               </button>
-              <input type="text" className="input-field" placeholder={tab === 'global' ? 'Message everyone...' : `Message ${activeDM?.username || ''}...`} value={inputMsg} onChange={handleInputChange} style={{ flex: 1 }} />
-              <button type="submit" className="primary-btn" style={{ padding: '11px 15px' }}><Send size={17} /></button>
+              <input type="text" className="input-field" placeholder={tab === 'global' ? 'Message everyone (or type @doc to query PDF)...' : `Message ${activeDM?.username || ''} (or type @doc)...`} value={inputMsg} onChange={handleInputChange} style={{ flex: 1 }} />
+              <button type="submit" className="primary-btn" style={{ padding: '11px 15px' }} disabled={isUploading}><Send size={17} /></button>
             </form>
           </>
+        )}
+        {/* RAG Engine Info Modal */}
+        {showDocsModal && (
+          <div className="modal-overlay" onClick={() => setShowDocsModal(false)}>
+            <div className="modal-content animate-scale" onClick={e => e.stopPropagation()} style={{ padding: '24px', maxWidth: '500px', width: '90%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Database size={20} color="var(--accent)" /> Knowledge Base
+                </h3>
+                <button onClick={() => setShowDocsModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-dim)' }}><X size={20}/></button>
+              </div>
+              
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: 1.5 }}>
+                Documents uploaded here are embedded in your private Vector database. Type <strong>@doc</strong> in any chat to query your knowledge base.
+                <br/><br/>
+                <strong style={{ color: 'var(--accent)' }}>💡 Tip for multiple files:</strong> If you have many files, you can target a specific one using Hybrid Search exact matching. For example: <br/>
+                <code>@doc "invoice.pdf" what is the total amount?</code>
+              </p>
+
+              <div style={{ background: 'rgba(0,0,0,0.15)', borderRadius: '12px', border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
+                {documents.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
+                    No documents found. Upload a PDF using the paperclip icon in the chat.
+                  </div>
+                ) : (
+                  documents.map((doc, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: idx < documents.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                        <FileText size={16} color="var(--accent)" style={{ flexShrink: 0 }} />
+                        <span className="truncate" style={{ fontSize: '0.85rem', fontWeight: 500 }}>{doc.filename}</span>
+                      </div>
+                      <button onClick={() => deleteDocument(doc.filename)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: 'var(--danger)', transition: 'background 0.2s' }} title="Delete document">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowDocsModal(false)} className="btn">Close</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
