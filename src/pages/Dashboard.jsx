@@ -10,6 +10,14 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 // Premium RAG Answer Card — renders Gemini answer + citation pills
 function RagCard({ answer, citations, query, onClose }) {
   const [expanded, setExpanded] = useState(false);
+  const [copiedAnswer, setCopiedAnswer] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(answer);
+    setCopiedAnswer(true);
+    setTimeout(() => setCopiedAnswer(false), 2000);
+  };
+
   return (
     <div className="rag-card animate-enter">
       <div className="rag-card-header">
@@ -20,12 +28,21 @@ function RagCard({ answer, citations, query, onClose }) {
             <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', marginTop: '1px' }}>Query: {query}</div>
           </div>
         </div>
-        <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: '4px', borderRadius: '6px', lineHeight: 1 }}>✕</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button onClick={handleCopy} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: copiedAnswer ? 'var(--success)' : 'var(--text-dim)', padding: '4px', borderRadius: '6px', lineHeight: 1 }} title="Copy Answer">
+            {copiedAnswer ? <Check size={14} /> : <Copy size={14} />}
+          </button>
+          {onClose && (
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: '4px', borderRadius: '6px', lineHeight: 1 }}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
       </div>
       <div className="rag-card-answer">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{answer}</ReactMarkdown>
       </div>
-      {citations.length > 0 && (
+      {citations && citations.length > 0 && (
         <div className="rag-card-citations">
           <button className="rag-citations-toggle" onClick={() => setExpanded(!expanded)}>
             <FileText size={12} />
@@ -191,7 +208,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [globalMessages, dmMessages, aiSuggestions]);
+  }, [globalMessages, dmMessages, aiSuggestions, ragCards, ragLoading]);
 
   const fetchRecentChats = useCallback(() => {
     fetch(`${API_URL}/api/chat/conversations`, {
@@ -372,16 +389,13 @@ export default function Dashboard() {
       const messageId = crypto.randomUUID();
       const isGlobal = tab === 'global';
       
-      // Show user's query
-      const optimisticMsg = { id: messageId, content: txt.trim(), senderId: user.id, senderName: user.username, createdAt: new Date().toISOString(), status: 'DELIVERED' };
+      // Show user's query bubble with @doc tag
+      const optimisticMsg = { id: messageId, content: txt.trim(), senderId: user.id, senderName: user.username, createdAt: new Date().toISOString(), status: 'DELIVERED', isDocQuery: true };
       if (isGlobal) setGlobalMessages(prev => [...prev, optimisticMsg]);
       else if (activeDM) setDmMessages(prev => [...prev, { ...optimisticMsg, receiverId: activeDM.id }]);
       
       setInputMsg('');
       
-      // Fake typing indicator for AI
-      setSystemMessages(prev => [...prev.slice(-20), { id: Date.now(), text: `🤖 AI is searching documents...`, time: new Date().toISOString() }]);
-
       setRagLoading(true);
       try {
         const res = await fetch(`${API_URL}/api/rag/query`, {
@@ -392,15 +406,17 @@ export default function Dashboard() {
         const data = await res.json();
         
         if (res.ok) {
-          // Push a structured RAG card instead of a messy chat bubble
-          const newCard = {
+          // Push a structured RAG card directly into the chat message timeline
+          const ragResponseMsg = {
             id: crypto.randomUUID(),
+            isRag: true,
             query,
             answer: data.data.llm_prompt,
             citations: data.data.citations,
             createdAt: new Date().toISOString(),
           };
-          setRagCards(prev => [...prev, newCard]);
+          if (isGlobal) setGlobalMessages(prev => [...prev, ragResponseMsg]);
+          else if (activeDM) setDmMessages(prev => [...prev, ragResponseMsg]);
         } else {
           alert(data.message || 'RAG query failed');
         }
@@ -677,14 +693,40 @@ export default function Dashboard() {
               ))}
 
               {filteredMessages.map(msg => {
+                if (msg.isRag) {
+                  return (
+                    <RagCard
+                      key={msg.id}
+                      query={msg.query}
+                      answer={msg.answer}
+                      citations={msg.citations}
+                    />
+                  );
+                }
+
                 const isMe = msg.senderId === user.id;
+                const isDoc = msg.isDocQuery || msg.content?.toLowerCase().startsWith('@doc');
                 const msgReactions = reactions[msg.id] || {};
+
                 return (
                   <div key={msg.id} className={`msg-bubble ${isMe ? 'animate-left' : 'animate-right'}`} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start' }}>
                     {!isMe && <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '2px', marginLeft: '12px', fontWeight: 500 }}>{msg.senderName || 'User'}</div>}
                     <div style={{ position: 'relative' }} onDoubleClick={() => addReaction(msg.id, '❤️')}>
-                      <div style={{ background: isMe ? 'var(--accent)' : 'rgba(255,255,255,0.05)', padding: '9px 13px', borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px', fontSize: '0.88rem', lineHeight: '1.45', wordBreak: 'break-word' }}>
-                        {msg.content}
+                      <div style={{
+                        background: isMe ? (isDoc ? 'linear-gradient(135deg, #6b4cff, #a855f7)' : 'var(--accent)') : 'rgba(255,255,255,0.05)',
+                        padding: '9px 13px',
+                        borderRadius: isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                        fontSize: '0.88rem',
+                        lineHeight: '1.45',
+                        wordBreak: 'break-word',
+                        border: isDoc ? '1px solid rgba(168, 85, 247, 0.4)' : 'none'
+                      }}>
+                        {isDoc && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', fontWeight: 700, color: '#f3e8ff', background: 'rgba(0,0,0,0.25)', padding: '2px 8px', borderRadius: '10px', marginBottom: '4px' }}>
+                            <BookOpen size={10} /> Knowledge Base Query
+                          </div>
+                        )}
+                        <div>{msg.content}</div>
                       </div>
                       {/* Reactions */}
                       {Object.keys(msgReactions).length > 0 && (
@@ -704,17 +746,6 @@ export default function Dashboard() {
                   </div>
                 );
               })}
-
-              {/* RAG Cards — premium structured AI answers */}
-              {ragCards.map(card => (
-                <RagCard
-                  key={card.id}
-                  query={card.query}
-                  answer={card.answer}
-                  citations={card.citations}
-                  onClose={() => setRagCards(prev => prev.filter(c => c.id !== card.id))}
-                />
-              ))}
               {/* RAG Loading Indicator */}
               {ragLoading && (
                 <div className="rag-loading animate-enter">
